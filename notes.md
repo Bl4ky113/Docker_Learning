@@ -95,3 +95,50 @@ then, docker should let us push our image to the repo.
 From DockerHub, we can even try our image by using a new instance. But this is just 
 a virtual machine connected via our browser, so it's the "same".
 
+## Persistent Data in Docker
+
+Unitl know in our NodeJs app, we save a little list of to dos, but everytime we 
+run or recreate the container, the dbs of the project wipes out its content.
+And even if we need the data in other containers, we can't access the data from one 
+container to other.
+
+We can use volumes to store the data of the container in our local storage, 
+and even from there we can share it to other containers.
+
+To do this, we first create the volume by creating it from the cli:
+
+\# docker volume create volume-name
+
+We stop the containers and then run them again mounting the volume.
+
+\# docker run -dp 3000:3000 --mount type=volume,src=volume-name,target=/path/to/data image-name
+
+Then we can try it and see that our data is now persistent. For our example, the target path
+is /etc/todos/, where the todo.db is stored in the containers.
+
+I tried, and it works flawless.
+
+But wait, where is this data beeing stored? We can use volume inspect volume-name, to check 
+the data of the volume, showing its mountpoint, generally on /var/lib/docker/volumes/volume-name/\_data/
+
+\# docker volume inspect volume-name
+
+## Bind Mounts
+
+Bind Mounts are a way to bind the mounting of an app, to a directory in the local storage.
+This way we can set where the data will be store if we use persistent data like volumes. And
+If the container changes, it will auto reload its content, avoiding to change all the process that we 
+saw, in order to show changes.
+
+But the weird thing is that we need to reinstall, and basicly do to the same stuff than in the Dockerfile, but from
+the terminal then we can use the app, and enjoy of the nodemon that help us to restart the container, adding the new
+changes. 
+
+We can see if our container has any errors or if it working properly by using the cli logs:
+
+\# docker logs -f container-id
+
+Then when we are over or ready to ship and share the docker container, we can ship it by just building our image.
+And then doing the other stuff.
+
+## Multicontainer Apps or Orchestated Services?
